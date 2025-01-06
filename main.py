@@ -1,6 +1,7 @@
-
+from game import Game
 
 def main():
+    g = Game()
     print("Hi")
     return
 
