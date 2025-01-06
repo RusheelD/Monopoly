@@ -33,38 +33,38 @@ class DefaultChance:
         db2 = game.spaces[-1]
         if db2.owner is not None and db2.owner != player:
             rent = DefaultSpaceRents.db2(db2.owner, game)
-            player.pay(rent, db2.owner)
+            player.pay(rent, db2.owner, game)
         return True
     
     # Advance to GO
     @staticmethod
     def c2(player: 'Player', game: 'Game'):
         player.space = 0
-        game.bank.pay(200, player)
+        game.bank.pay(200, player, game)
         return True
     
     # Advance to R4
     @staticmethod
     def c3(player: 'Player', game: 'Game'):
         if player.space > 24:
-            game.bank.pay(200, player)
+            game.bank.pay(200, player, game)
         player.space = 24
         r4 = game.spaces[24]
         if r4.owner is not None and r4.owner != player:
             rent = DefaultSpaceRents.r3(r4.owner, game)
-            player.pay(rent, r4.owner)
+            player.pay(rent, r4.owner, game)
         return True
     
     # Advance to P1
     @staticmethod
     def c4(player: 'Player', game: 'Game'):
         if player.space > 11:
-            game.bank.pay(200, player)
+            game.bank.pay(200, player, game)
         player.space = 11
         p1 = game.spaces[11]
         if p1.owner is not None and p1.owner != player:
             rent = DefaultSpaceRents.p1(p1.owner, game)
-            player.pay(rent, p1.owner)
+            player.pay(rent, p1.owner, game)
         return True
     
     # Advance to nearest RR
@@ -73,7 +73,7 @@ class DefaultChance:
         railroads = [5, 15, 25, 35]
 
         if player.space > 35:
-            game.bank.pay(200, player)
+            game.bank.pay(200, player, game)
             player.space = 5
         else:
             player.space = min(railroads, key=lambda x: max(x - player.space, 0))
@@ -82,7 +82,7 @@ class DefaultChance:
         
         if new_space.owner is not None and new_space.owner != player:
             rent = DefaultSpaceRents.rr(new_space.owner, game) * 2
-            player.pay(rent, new_space.owner)
+            player.pay(rent, new_space.owner, game)
         return True
     
     # Advance to nearest RR again
@@ -96,7 +96,7 @@ class DefaultChance:
         utilities = [12, 28]
 
         if player.space > 28:
-            game.bank.pay(200, player)
+            game.bank.pay(200, player, game)
             player.space = 12
         else:
             player.space = min(utilities, key=lambda x: max(x - player.space, 0))
@@ -105,13 +105,13 @@ class DefaultChance:
         
         if new_space.owner is not None and new_space.owner != player:
             rent = sum(game.dice) * 10
-            player.pay(rent, new_space.owner)
+            player.pay(rent, new_space.owner, game)
         return True
     
     # Bank pays you $50
     @staticmethod
     def c8(player: 'Player', game: 'Game'):
-        player.money += 50
+        game.bank.pay(50, player, game)
         return True
     
     # Get out of jail free
@@ -140,25 +140,25 @@ class DefaultChance:
                 rent += 100
             else:
                 rent += prop.houses * 25
-        player.pay(rent, game.bank)
+        player.pay(rent, game.bank, game)
         return True
     
     # Speeding fine
     @staticmethod
     def c13(player: 'Player', game: 'Game'):
-        player.pay(15, game.bank)
+        player.pay(15, game.bank, game)
         return True
     
     # Take a trip to RR1
     @staticmethod
     def c14(player: 'Player', game: 'Game'):
         if player.space > 5:
-            game.bank.pay(200, player)
+            game.bank.pay(200, player, game)
         player.space = 5
         rr1 = game.spaces[5]
         if rr1.owner is not None and rr1.owner != player:
             rent = DefaultSpaceRents.rr(rr1.owner, game)
-            player.pay(rent, rr1.owner)
+            player.pay(rent, rr1.owner, game)
         return True
     
     # Elected chairman
@@ -166,13 +166,13 @@ class DefaultChance:
     def c15(player: 'Player', game: 'Game'):
         for p in game.players:
             if p != player:
-                player.pay(50, p)
+                player.pay(50, p, game)
         return True
     
     # Building loan matures
     @staticmethod
     def c16(player: 'Player', game: 'Game'):
-        game.bank.pay(150, player)
+        game.bank.pay(150, player, game)
         return True
 
 class DefaultCommunityChest:
@@ -202,25 +202,25 @@ class DefaultCommunityChest:
     @staticmethod
     def c1(player: 'Player', game: 'Game'):
         player.space = 0
-        game.bank.pay(200, player)
+        game.bank.pay(200, player, game)
         return True
     
     # Bank error in your favor
     @staticmethod
     def c2(player: 'Player', game: 'Game'):
-        game.bank.pay(200, player)
+        game.bank.pay(200, player, game)
         return True
     
     # Doctor's fee
     @staticmethod
     def c3(player: 'Player', game: 'Game'):
-        player.pay(50, game.bank)
+        player.pay(50, game.bank, game)
         return True
 
     # From sale of stock you get $50
     @staticmethod
     def c4(player: 'Player', game: 'Game'):
-        game.bank.pay(50, player)
+        game.bank.pay(50, player, game)
         return True
     
     # Get out of jail free
@@ -237,13 +237,13 @@ class DefaultCommunityChest:
     # Holiday fund matures
     @staticmethod
     def c7(player: 'Player', game: 'Game'):
-        game.bank.pay(100, player)
+        game.bank.pay(100, player, game)
         return True
 
     # Income tax refund
     @staticmethod
     def c8(player: 'Player', game: 'Game'):
-        game.bank.pay(20, player)
+        game.bank.pay(20, player, game)
         return True
     
     # It's your birthday
@@ -251,31 +251,31 @@ class DefaultCommunityChest:
     def c9(player: 'Player', game: 'Game'):
         for p in game.players:
             if p != player:
-                p.pay(10, player)
+                p.pay(10, player, game)
         return True
     
     # Life insurance matures
     @staticmethod
     def c10(player: 'Player', game: 'Game'):
-        game.bank.pay(100, player)
+        game.bank.pay(100, player, game)
         return True
     
     # Pay hospital fees
     @staticmethod
     def c11(player: 'Player', game: 'Game'):
-        player.pay(100, game.bank)
+        player.pay(100, game.bank, game)
         return True
     
     # Pay school fees
     @staticmethod
     def c12(player: 'Player', game: 'Game'):
-        player.pay(50, game.bank)
+        player.pay(50, game.bank, game)
         return True
     
     # Receive $25 consultancy fee
     @staticmethod
     def c13(player: 'Player', game: 'Game'):
-        game.bank.pay(25, player)
+        game.bank.pay(25, player, game)
         return True
     
     # You are assessed for street repairs
@@ -287,19 +287,19 @@ class DefaultCommunityChest:
                 rent += 115
             else:
                 rent += prop.houses * 40
-        player.pay(rent, game.bank)
+        player.pay(rent, game.bank, game)
         return True
     
     # You have won second prize in a beauty contest
     @staticmethod
     def c15(player: 'Player', game: 'Game'):
-        game.bank.pay(10, player)
+        game.bank.pay(10, player, game)
         return True
     
     # You inherit $100
     @staticmethod
     def c16(player: 'Player', game: 'Game'):
-        game.bank.pay(100, player)
+        game.bank.pay(100, player, game)
         return True
 
 class DefaultSpaceRents:
@@ -444,7 +444,7 @@ class DefaultSpaceRents:
     
     @staticmethod
     def utility(player: 'Player', game: 'Game'):
-        num_in_set = sum([1 for prop in player.properties if prop.set == "Utility"])
+        num_in_set = sum([1 for prop in player.properties if prop.set == "U"])
         match num_in_set:
             case 1:
                 return 4 * sum(game.dice)
