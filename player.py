@@ -5,8 +5,9 @@ if TYPE_CHECKING:
     from space import Space
 
 class Player:
-    def __init__(self, id: int, piece: str, debug: bool = False):
+    def __init__(self, id: int, piece: str, debug: bool = False, is_ai: bool = True):
         self.debug = debug
+        self.is_ai = is_ai
         self.id = id
         self.piece = piece
         self.space = 0
@@ -19,10 +20,14 @@ class Player:
         self.bankrupt = False
     
     def buy_property(self, space: 'Space', game: 'Game') -> bool:
-        if self.money >= space.value:
-            return True
+        if self.is_ai:
+            if self.money >= space.value:
+                return True
+            else:
+                return False
         else:
-            return False
+            # TODO: Get user input
+            pass
         
     def lose(self, other: 'Player', game: 'Game'):
         for prop in self.properties.copy():
@@ -55,6 +60,11 @@ class Player:
             
             all_mortgaged = False
             while (self.money < rent and not all_mortgaged):
+
+                if not self.is_ai:
+                    # TODO: Get user input
+                    continue
+
                 sorted_props = sorted(self.properties, key=lambda x: x.value)
                 for i, prop in enumerate(sorted_props):
                     if not prop.mortgaged and ((prop.value // 2 + self.money) >= rent or all([p.mortgaged for p in sorted_props[i+1:]])):
@@ -89,6 +99,11 @@ class Player:
     # -1 represents the player not having enough money to bid
     # any other number represents the player's bid
     def make_auction_bid(self, bid: int, space: 'Space', game: 'Game') -> int:
+        if not self.is_ai:
+            user_input = 0
+            # TODO: Get user input
+            return user_input
+        
         if (bid + 1) > self.money:
             return -1
         else:
@@ -104,6 +119,11 @@ class Player:
             return 0
     
     def doubles_or_pay_or_jfc(self, game: 'Game'):
+        if not self.is_ai:
+            user_input = 0
+            # TODO: Get user input
+            return user_input
+
         if self.turns_in_jail == 3 or game.turns < 25:
             if len(self.jail_free_cards) > 0:
                 return 2
@@ -121,6 +141,12 @@ class Player:
             game.community_chest.append(card_to_use)
     
     def build_house(self, game: 'Game'):
+
+        if not self.is_ai:
+            user_input = 0
+            # TODO: Get user input
+            return self.properties[user_input]
+
         if len(self.properties) == 0:
             return None
         
@@ -133,6 +159,12 @@ class Player:
         return None
 
     def unmortgage_property(self, game: 'Game'):
+
+        if not self.is_ai:
+            user_input = 0
+            # TODO: Get user input
+            return self.properties[user_input]
+
         if len(self.properties) == 0:
             return None
         
