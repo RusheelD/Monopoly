@@ -345,6 +345,12 @@ class Game:
                         return True
                 case 1:
                     player.pay(50, self.bank, self)
+
+                    if player.bankrupt:
+                        self.next_player()
+                        self.turns += 1
+                        return True
+
                     doubles = make_dice_roll()
                     self.out_of_jail(player)
                 case 2:

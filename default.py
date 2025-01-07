@@ -31,9 +31,10 @@ class DefaultChance:
     def c1(player: 'Player', game: 'Game'):
         player.space = len(game.spaces) - 1
         db2 = game.spaces[-1]
-        if db2.owner is not None and db2.owner != player:
-            rent = DefaultSpaceRents.db2(db2.owner, game)
-            player.pay(rent, db2.owner, game)
+        if db2.owner is not None and db2.owner.piece != player.piece and not db2.mortgaged:
+            player.pay(db2.rent(db2.owner, game), db2.owner, game)
+        elif db2.owner is None:
+            db2.on_land(player, game)
         return True
     
     # Advance to GO
@@ -50,9 +51,10 @@ class DefaultChance:
             game.bank.pay(200, player, game)
         player.space = 24
         r4 = game.spaces[24]
-        if r4.owner is not None and r4.owner != player:
-            rent = DefaultSpaceRents.r3(r4.owner, game)
-            player.pay(rent, r4.owner, game)
+        if r4.owner is not None and r4.owner.piece != player.piece and not r4.mortgaged:
+            player.pay(r4.rent(r4.owner, game), r4.owner, game)
+        elif r4.owner is None:
+            r4.on_land(player, game)
         return True
     
     # Advance to P1
@@ -62,9 +64,10 @@ class DefaultChance:
             game.bank.pay(200, player, game)
         player.space = 11
         p1 = game.spaces[11]
-        if p1.owner is not None and p1.owner != player:
-            rent = DefaultSpaceRents.p1(p1.owner, game)
-            player.pay(rent, p1.owner, game)
+        if p1.owner is not None and p1.owner.piece != player.piece and not p1.mortgaged:
+            player.pay(p1.rent(p1.owner, game), p1.owner, game)
+        elif p1.owner is None:
+            p1.on_land(player, game)
         return True
     
     # Advance to nearest RR
@@ -79,10 +82,10 @@ class DefaultChance:
             player.space = min(railroads, key=lambda x: max(x - player.space, 0))
         
         new_space = game.spaces[player.space]
-        
-        if new_space.owner is not None and new_space.owner != player:
-            rent = DefaultSpaceRents.rr(new_space.owner, game) * 2
-            player.pay(rent, new_space.owner, game)
+        if new_space.owner is not None and new_space.owner.piece != player.piece and not new_space.mortgaged:
+            player.pay(new_space.rent(new_space.owner, game) * 2, new_space.owner, game)
+        elif new_space.owner is None:
+            new_space.on_land(player, game)
         return True
     
     # Advance to nearest RR again
@@ -102,10 +105,11 @@ class DefaultChance:
             player.space = min(utilities, key=lambda x: max(x - player.space, 0))
         
         new_space = game.spaces[player.space]
-        
-        if new_space.owner is not None and new_space.owner != player:
-            rent = sum(game.dice) * 10
-            player.pay(rent, new_space.owner, game)
+
+        if new_space.owner is not None and new_space.owner.piece != player.piece and not new_space.mortgaged:
+            player.pay(sum(game.dice) * 10, new_space.owner, game)
+        elif new_space.owner is None:
+            new_space.on_land(player, game)
         return True
     
     # Bank pays you $50
