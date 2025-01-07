@@ -165,8 +165,10 @@ class DefaultChance:
     @staticmethod
     def c15(player: 'Player', game: 'Game'):
         for p in game.players:
-            if p != player:
+            if p != player and not p.bankrupt:
                 player.pay(50, p, game)
+            if player.bankrupt:
+                break
         return True
     
     # Building loan matures
@@ -250,7 +252,7 @@ class DefaultCommunityChest:
     @staticmethod
     def c9(player: 'Player', game: 'Game'):
         for p in game.players:
-            if p != player:
+            if p != player and not p.bankrupt:
                 p.pay(10, player, game)
         return True
     

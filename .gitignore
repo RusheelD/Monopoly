@@ -1,3 +1,4 @@
 /logs
+/logs_*
 /saved_logs
 /__pycache__

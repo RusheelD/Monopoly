@@ -6,9 +6,9 @@ from space import Space
 
 class Game:
 
-    def __init__(self, num_players: int = 4, draw_limit = 2500, debug = False):
+    def __init__(self, num_players: int = 4, max_turns = 2500, debug = False):
         self.debug = debug
-        self.draw_limit = draw_limit
+        self.max_turns_before_draw = max_turns
         self.all_pieces = ["Car", "Thimble", "Dog", "Boot", "Hat", "Ship", "Iron", "Wheelbarrow", "T-Rex", "Cat"]
         self.chance: list[Card] = DefaultChance.generate_chance_deck()
         self.community_chest: list[Card] = DefaultCommunityChest.generate_community_chest_deck()
@@ -186,6 +186,9 @@ class Game:
         if space.owner == player and not space.mortgaged and space.houses == 0:
             space.mortgaged = True
             self.bank.pay(space.value // 2, player, self)
+
+            if self.debug:
+                print(f"{player.piece} mortgaged {space.id}, new total: ${player.money}")
     
     def unmortgage_property(self, player: Player, space: Space):
         if space.owner == player and space.mortgaged:
@@ -372,7 +375,7 @@ class Game:
         
         self.turns += 1
 
-        if self.turns >= self.draw_limit:
+        if self.turns >= self.max_turns_before_draw:
             self.draw_game = True
         
         props_in_bank = [self.spaces[i] for i in self.buyable_properties if self.spaces[i].owner is None]
@@ -383,7 +386,11 @@ class Game:
                 for prop in player.properties:
                     if prop.set not in seen and self.has_all_in_set(player, prop):
                         prop_sets += 1
-                        seen.add(prop.set)
+                    elif prop.set == "RR" and len([p for p in player.properties if p.set == "RR"]) == 4:
+                        prop_sets += 1
+                    seen.add(prop.set)
+
+                    
             if prop_sets == 0:
                 self.draw_game = True
                 if self.debug:
@@ -415,12 +422,12 @@ class Game:
                 print(f"{player.piece} is on {self.spaces[player.space].id} with ${player.money}")
             print(f"Jail Free Cards: {len(player.jail_free_cards)}")
             print("Properties: ")
-            for prop in player.properties:
+            for prop in sorted(player.properties, key=lambda x: x.set):
                 print(f"\t{prop.id}{(3-len(prop.id))*" "} - ${prop.value}",end='')
                 if prop.mortgaged:
-                    print("\t (Mortgaged)")
+                    print("\t(Mortgaged)")
                 elif prop.houses > 0:
-                    print(f"\t - {prop.houses} houses")
+                    print(f"\t- {prop.houses} houses")
                 else:
                     print()
             print()

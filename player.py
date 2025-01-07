@@ -30,6 +30,19 @@ class Player:
             pass
         
     def lose(self, other: 'Player', game: 'Game'):
+        if self.debug:
+            print(f"{self.piece} has gone bankrupt to {other.piece}")
+
+        if other.piece == "Bank":
+            for prop in self.properties:
+                prop.owner = None
+            self.properties = []
+            self.pay(self.money, other, game)
+            while len(self.jail_free_cards) > 0:
+                self.use_jail_free_card(game)
+            self.bankrupt = True
+            return
+
         for prop in self.properties.copy():
             prop.owner = other
             other.properties.append(prop)
@@ -47,7 +60,7 @@ class Player:
     
     def pay(self, rent: int, other: 'Player', game: 'Game'):
         if self.debug and self.piece != "Bank":
-            print(f"{self.piece} needs to pay {other.piece} ${rent}")
+            print(f"{self.piece} needs to pay {other.piece} ${int(rent)}")
             print(f"{self.piece} has ${self.money}")
         
         if (self.money >= rent):
@@ -68,28 +81,27 @@ class Player:
                 sorted_props = sorted(self.properties, key=lambda x: x.value)
                 for i, prop in enumerate(sorted_props):
                     if not prop.mortgaged and ((prop.value // 2 + self.money) >= rent or all([p.mortgaged for p in sorted_props[i+1:]])):
-                        if prop.houses == 0:
-
+                        if all([p.houses == 0 for p in self.properties if p.set == prop.set]):
                             if self.debug:
-                                print(f"Mortgaging {prop.id} to pay rent")
+                                print(f"Mortgaging {prop.id} to pay")
 
                             game.mortgage_property(self, prop)
                         elif game.can_sell_house(self, prop):
 
                             if self.debug:
-                                print(f"Selling house on {prop.id} to pay rent")
+                                print(f"Selling house on {prop.id} to pay")
 
                             game.sell_house(self, prop)
                         else:
 
                             if self.debug:
-                                print(f"Selling house on {prop.set} set to pay rent")
+                                print(f"Selling house on {prop.set} set to pay")
 
                             self.sell_in_set(prop, game)
                         break
                 all_mortgaged = all([prop.mortgaged for prop in self.properties])
             
-            if not all_mortgaged:
+            if self.money >= rent:
                 self.money = int(self.money - rent)
                 other.money = int(other.money + rent)
             else:
